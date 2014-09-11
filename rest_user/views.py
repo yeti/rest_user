@@ -2,6 +2,7 @@ import base64
 from django.contrib.auth import get_user_model
 from rest_framework import viewsets, generics
 from rest_framework.authentication import BasicAuthentication
+from rest_user.rest_user.permissions import IsAuthenticatedOrCreate
 from rest_user.rest_user.serializers import SignUpSerializer, UserSerializer, LoginSerializer
 
 __author__ = 'baylee'
@@ -13,6 +14,7 @@ User = get_user_model()
 class SignUp(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = SignUpSerializer
+    permission_classes = (IsAuthenticatedOrCreate,)
 
     def post_save(self, obj, created=False):
         """
