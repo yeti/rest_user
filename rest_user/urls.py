@@ -14,4 +14,3 @@ urlpatterns = patterns('',
     url(r'^login/$', views.Login.as_view(), name="login"),
     url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
 )
-
