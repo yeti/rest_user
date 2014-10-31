@@ -31,4 +31,5 @@ class SignUpSerializer(LoginSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'fullname', 'thumbnail')
+        exclude = ('password', 'last_login', 'is_active', 'is_admin', 'is_staff', 'is_superuser', 'groups',
+                   'user_permissions')

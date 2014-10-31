@@ -24,6 +24,26 @@ class UserTests(ManticomTestCase):
         self.assertEqual(response.data["count"], 1)
         self.assertEqual(response.data["results"][0]["username"], frank.username)
 
+    def test_update_user(self):
+        me = UserFactory()
+        stranger = UserFactory()
+        url = reverse("users-detail", args=[me.pk])
+
+        data = {
+            "fullname": "Hodor"
+        }
+        # Unauthenticated user can't update a user's profile
+        self.assertManticomPATCHResponse(url, "$userRequest", "$userResponse", data, None, unauthorized=True)
+        self.assertEqual(User.objects.get(pk=me.pk).fullname, None)
+
+        # Stranger can't update another user's profile
+        self.assertManticomPATCHResponse(url, "$userRequest", "$userResponse", data, stranger, unauthorized=True)
+        self.assertEqual(User.objects.get(pk=me.pk).fullname, None)
+
+        # User can update their own profile
+        self.assertManticomPATCHResponse(url, "$userRequest", "$userResponse", data, me)
+        self.assertEqual(User.objects.get(pk=me.pk).fullname, "Hodor")
+
 
 class AuthenticationTests(ManticomTestCase):
     def setUp(self):
