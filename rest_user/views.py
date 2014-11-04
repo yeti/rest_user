@@ -2,6 +2,7 @@ import base64
 from django.contrib.auth import get_user_model
 from rest_framework import viewsets, generics
 from rest_framework.authentication import BasicAuthentication
+from rest_core.rest_core.permissions import IsOwnerOrReadOnly
 from rest_user.rest_user.permissions import IsAuthenticatedOrCreate
 from rest_user.rest_user.serializers import SignUpSerializer, UserSerializer, LoginSerializer
 
@@ -38,4 +39,5 @@ class Login(generics.ListAPIView):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    permission_classes = (IsOwnerOrReadOnly,)
     search_fields = ('username', 'fullname')
