@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
+from rest_core.rest_core.serializers import BaseModelSerializer
 
 __author__ = 'baylee'
 
@@ -28,7 +29,7 @@ class SignUpSerializer(LoginSerializer):
         write_only_fields = ('password',)
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(BaseModelSerializer):
     class Meta:
         model = User
         exclude = ('password', 'last_login', 'is_active', 'is_admin', 'is_staff', 'is_superuser', 'groups',
