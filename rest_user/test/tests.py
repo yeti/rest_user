@@ -69,7 +69,7 @@ class AuthenticationTests(ManticomTestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Basic ' + auth_string)
         response = self.client.get(url)
         self.assertValidJSONResponse(response)
-        self.check_response_data(response, "results", "$loginResponse")
+        self.check_response_data(response, "$loginResponse")
 
         # Incorrect credentials return unauthorized
         auth_string = base64.encodestring("tester1:WRONGPASSWORD")
