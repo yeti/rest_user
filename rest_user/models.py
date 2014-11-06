@@ -31,6 +31,13 @@ class AbstractYeti(AbstractBaseUser, PermissionsMixin):
     is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
 
+    SIZES = {
+        'thumbnail': {'height': 60, 'width': 60},
+        'small_photo': {'height': 120, 'width': 120},
+        'large_photo': {'height': 300, 'width': 300}
+    }
+    original_file_name = "original_photo"
+
     original_photo = models.ImageField(upload_to="user_photos/original/", blank=True, null=True)
     small_photo = models.ImageField(upload_to="user_photos/small/", blank=True, null=True)
     large_photo = models.ImageField(upload_to="user_photos/large/", blank=True, null=True)
