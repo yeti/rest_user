@@ -30,6 +30,9 @@ class SignUpSerializer(LoginSerializer):
 
 
 class UserSerializer(BaseModelSerializer):
+    user_following_count = serializers.Field(source='user_following_count')
+    user_followers_count = serializers.Field(source='user_followers_count')
+
     class Meta:
         model = User
         exclude = ('password', 'last_login', 'is_active', 'is_admin', 'is_staff', 'is_superuser', 'groups',
