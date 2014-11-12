@@ -44,6 +44,14 @@ class UserTests(ManticomTestCase):
         self.assertManticomPATCHResponse(url, "$userRequest", "$userResponse", data, me)
         self.assertEqual(User.objects.get(pk=me.pk).fullname, "Hodor")
 
+    def test_get_logged_in_user(self):
+        me = UserFactory()
+        UserFactory()
+
+        url = reverse("users-me")
+        response = self.assertManticomGETResponse(url, None, "$userResponse", me)
+        self.assertEqual(response.data["id"], me.pk)
+
 
 class AuthenticationTests(ManticomTestCase):
     def setUp(self):
