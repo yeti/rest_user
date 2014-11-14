@@ -30,6 +30,13 @@ class SignUpSerializer(LoginSerializer):
         fields = ('username', 'email', 'password', 'client_id', 'client_secret')
         write_only_fields = ('password',)
 
+    def restore_object(self, attrs, instance=None):
+        if attrs.get("username", None):
+            attrs["username"] = attrs["username"].lower()
+        if attrs.get("email", None):
+            attrs["email"] = attrs["email"].lower()
+        return User(**attrs)
+
 
 class UserSerializer(BaseModelSerializer):
     class Meta:

@@ -56,7 +56,7 @@ class UserTests(ManticomTestCase):
 class AuthenticationTests(ManticomTestCase):
     def setUp(self):
         super(AuthenticationTests, self).setUp()
-        self.user = User.objects.create_user(username='tester1', email='tester1@yetihq.com', password='password')
+        self.user = User.objects.create_user(username='tester1', email='tester1@yeti.co', password='password')
 
     def test_user_can_sign_up(self):
         url = reverse("sign_up")
@@ -84,6 +84,35 @@ class AuthenticationTests(ManticomTestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Basic ' + auth_string)
         response = self.client.get(url)
         self.assertHttpUnauthorized(response)
+
+    def test_inexact_signup(self):
+        """
+        Email and username are case insensitive
+        """
+        UserFactory(username="used", email="used@email.com")
+        url = reverse("sign_up")
+
+        data = {
+            'username': 'useD',
+            'email': 'different@email.com',
+            'password': "password"
+        }
+        response = self.client.post(url, data, format="json")
+        self.assertHttpBadRequest(response)
+
+        data = {'username': "new_username", 'email': 'useD@email.com', 'password': "password"}
+        response = self.client.post(url, data, format="json")
+        self.assertHttpBadRequest(response)
+
+    def test_inexact_login(self):
+        url = reverse("login")
+
+        # username is case-insensitive for login
+        auth_string = base64.encodestring("Tester1:password")
+        self.client.credentials(HTTP_AUTHORIZATION='Basic ' + auth_string)
+        response = self.client.get(url)
+        self.assertValidJSONResponse(response)
+        self.check_response_data(response, "$loginResponse")
 
     def test_user_can_get_token(self):
         """

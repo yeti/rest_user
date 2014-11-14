@@ -25,7 +25,7 @@ class AbstractYeti(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length=80, unique=True)
     # Field name should be `fullname` instead of `full_name` for python-social-auth
     fullname = models.CharField(max_length=80, blank=True, null=True)
-    email = models.EmailField(blank=True, null=True)
+    email = models.EmailField(blank=True, null=True, unique=True)
     about = models.TextField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
@@ -53,3 +53,13 @@ class AbstractYeti(AbstractBaseUser, PermissionsMixin):
 
     def __unicode__(self):
         return u"%s" % self.username
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        self.username = self.username.lower()
+
+        if self.email:
+            self.email = self.email.lower().strip()  # Remove leading or trailing white space
+        if self.email == "":  # Allows unique=True to work without forcing email presence in forms
+            self.email = None
+        super(AbstractYeti, self).save(force_insert, force_update, using, update_fields)
