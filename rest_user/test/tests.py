@@ -11,6 +11,10 @@ User = get_user_model()
 
 
 class UserTests(ManticomTestCase):
+    def setUp(self):
+        super(UserTests, self).setUp()
+        self.user = User.objects.create_user(username='tester1', email='tester1@yeti.co', password='password')
+
     def test_autocomplete(self):
         """
         Tests that when a string is sent with the user's name or username, we return a filtered list of users
@@ -52,22 +56,20 @@ class UserTests(ManticomTestCase):
         response = self.assertManticomGETResponse(url, None, "$userResponse", me)
         self.assertEqual(response.data["id"], me.pk)
 
-
-class AuthenticationTests(ManticomTestCase):
-    def setUp(self):
-        super(AuthenticationTests, self).setUp()
-        self.user = User.objects.create_user(username='tester1', email='tester1@yeti.co', password='password')
-
     def test_user_can_sign_up(self):
         url = reverse("sign_up")
-        password = base64.encodestring("test")
+        password = base64.encodestring("testtest")
         data = {
             "username": "tester",
             "email": "tester@yetihq.com",
             "password": password
         }
         self.assertManticomPOSTResponse(url, "$signUpRequest", "$signUpResponse", data, None)
-        self.assertEqual(User.objects.filter(username="tester").count(), 1)
+        user = User.objects.filter(username="tester")
+        self.assertEqual(user.count(), 1)
+
+        # Password gets hashed
+        self.assertTrue(user[0].check_password("testtest"))
 
     def test_user_can_log_in(self):
         url = reverse("login")
@@ -113,6 +115,45 @@ class AuthenticationTests(ManticomTestCase):
         response = self.client.get(url)
         self.assertValidJSONResponse(response)
         self.check_response_data(response, "$loginResponse")
+
+    def test_edit_user_to_inexact_match(self):
+        """
+        You also can't edit a user to an inexact match of someone else's username. This fails correctly at the DB level,
+        but need to add validation in the API to give better errors
+        """
+        user1 = UserFactory(username="baylee")
+        UserFactory(username="winnie")
+
+        url = reverse("users-detail", args=[user1.pk])
+        data = {"username": "Winnie"}
+        self.add_credentials(user1)
+        response = self.client.patch(url, data, format="json")
+        self.assertHttpBadRequest(response)
+
+    def test_user_can_change_password(self):
+        felicia = UserFactory(username='felicia')
+        felicia.set_password('password')
+        felicia.save()
+        stranger = UserFactory()
+        url = reverse("users-password", args=[felicia.pk])
+
+        data = {
+            "old_password": base64.encodestring("password"),
+            "password": base64.encodestring("felicia")
+        }
+        # Unauthenticated user can't change password
+        self.assertManticomPATCHResponse(url, "$changePasswordRequest", "$changePasswordResponse", data, None,
+                                         unauthorized=True)
+        self.assertFalse(User.objects.get(pk=felicia.pk).check_password("felicia"))
+
+        # Stranger can't change another user's password
+        self.assertManticomPATCHResponse(url, "$changePasswordRequest", "$changePasswordResponse", data, stranger,
+                                         unauthorized=True)
+        self.assertFalse(User.objects.get(pk=felicia.pk).check_password("felicia"))
+
+        # User can change their own password
+        self.assertManticomPATCHResponse(url, "$changePasswordRequest", "$changePasswordResponse", data, felicia)
+        self.assertTrue(User.objects.get(pk=felicia.pk).check_password("felicia"))
 
     def test_user_can_get_token(self):
         """

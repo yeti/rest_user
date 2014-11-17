@@ -3,6 +3,7 @@ from mezzanine.core.auth_backends import MezzanineBackend
 __author__ = 'baylee'
 
 
+# TODO: shouldn't have Mezzanine dependencies
 class CaseInsensitiveMezzanineBackend(MezzanineBackend):
     def authenticate(self, **kwargs):
         if kwargs.get("username", None):
