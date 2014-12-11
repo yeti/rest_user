@@ -45,8 +45,9 @@ class LoginSerializer(AuthSerializerMixin, serializers.ModelSerializer):
 
 
 class SignUpSerializer(LoginSerializer):
-    class Meta(LoginSerializer.Meta):
-        fields = ('username', 'email', 'password', 'client_id', 'client_secret')
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'password', 'client_id', 'client_secret', 'original_photo')
         write_only_fields = ('password',)
 
 
